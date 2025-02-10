@@ -149,7 +149,7 @@ async def patch_metadata(
 ):
     await check_permissions(action=ActionType.MANAGE, job_db=job_db, job_ids=updates)
     possible_attribute_columns = [
-        name.lower() for name in _get_columns(Jobs.__table__, None)
+        col.name.lower() for col in _get_columns(Jobs.__table__, None)
     ]
 
     attr_updates = {}
@@ -163,17 +163,18 @@ async def patch_metadata(
             if pname.lower() in possible_attribute_columns
         }
         # else set elastic parameters DB
-        param_updates[job_id] = [
-            (pname, pvalue)
+        param_updates[job_id] = {
+            pname: pvalue
             for pname, pvalue in metadata.items()
             if pname.lower() not in possible_attribute_columns
-        ]
+        }
     # bulk set job attributes
     await job_db.set_job_attributes_bulk(attr_updates)
 
     # TODO: can we upsert to multiple documents?
     for job_id, p_updates_ in param_updates.items():
-        await job_parameters_db.upsert(
-            int(job_id),
-            p_updates_,
-        )
+        if p_updates_:
+            await job_parameters_db.upsert(
+                int(job_id),
+                p_updates_,
+            )
