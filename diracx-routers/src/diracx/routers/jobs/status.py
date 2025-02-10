@@ -140,7 +140,7 @@ async def reschedule_bulk_jobs(
     return resched_jobs
 
 
-@router.patch("/metadata")
+@router.patch("/metadata", status_code=HTTPStatus.NO_CONTENT)
 async def patch_metadata(
     updates: dict[int, dict[str, Any]],
     job_db: JobDB,
@@ -177,11 +177,3 @@ async def patch_metadata(
             int(job_id),
             p_updates_,
         )
-
-    return {
-        job_id: {
-            "attributes": attr_updates[job_id],
-            "parameters": param_updates[job_id],
-        }
-        for job_id in updates.keys()
-    }
