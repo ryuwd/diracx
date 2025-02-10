@@ -141,7 +141,7 @@ async def reschedule_bulk_jobs(
 
 
 @router.patch("/metadata")
-async def set_job_parameters_or_attributes(
+async def patch_metadata(
     updates: dict[int, dict[str, Any]],
     job_db: JobDB,
     job_parameters_db: JobParametersDB,
