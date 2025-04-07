@@ -7,13 +7,15 @@ from sqlalchemy import (
     String,
     Uuid,
 )
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import DeclarativeBase, mapped_column
 
-from diracx.db.sql.utils import Column, DateNowColumn, EnumColumn, NullColumn
+from diracx.db.sql.utils import DateNowColumn, EnumColumn, NullColumn
 
 USER_CODE_LENGTH = 8
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    pass
 
 
 class FlowStatus(Enum):
@@ -41,25 +43,27 @@ class FlowStatus(Enum):
 
 class DeviceFlows(Base):
     __tablename__ = "DeviceFlows"
-    user_code = Column("UserCode", String(USER_CODE_LENGTH), primary_key=True)
+    user_code = mapped_column("UserCode", String(USER_CODE_LENGTH), primary_key=True)
     status = EnumColumn("Status", FlowStatus, server_default=FlowStatus.PENDING.name)
     creation_time = DateNowColumn("CreationTime")
-    client_id = Column("ClientID", String(255))
-    scope = Column("Scope", String(1024))
-    device_code = Column("DeviceCode", String(128), unique=True)  # Should be a hash
+    client_id = mapped_column("ClientID", String(255))
+    scope = mapped_column("Scope", String(1024))
+    device_code = mapped_column(
+        "DeviceCode", String(128), unique=True
+    )  # Should be a hash
     id_token = NullColumn("IDToken", JSON())
 
 
 class AuthorizationFlows(Base):
     __tablename__ = "AuthorizationFlows"
-    uuid = Column("UUID", Uuid(as_uuid=False), primary_key=True)
+    uuid = mapped_column("UUID", Uuid(as_uuid=False), primary_key=True)
     status = EnumColumn("Status", FlowStatus, server_default=FlowStatus.PENDING.name)
-    client_id = Column("ClientID", String(255))
+    client_id = mapped_column("ClientID", String(255))
     creation_time = DateNowColumn("CreationTime")
-    scope = Column("Scope", String(1024))
-    code_challenge = Column("CodeChallenge", String(255))
-    code_challenge_method = Column("CodeChallengeMethod", String(8))
-    redirect_uri = Column("RedirectURI", String(255))
+    scope = mapped_column("Scope", String(1024))
+    code_challenge = mapped_column("CodeChallenge", String(255))
+    code_challenge_method = mapped_column("CodeChallengeMethod", String(8))
+    redirect_uri = mapped_column("RedirectURI", String(255))
     code = NullColumn("Code", String(255))  # Should be a hash
     id_token = NullColumn("IDToken", JSON())
 
@@ -87,13 +91,13 @@ class RefreshTokens(Base):
 
     __tablename__ = "RefreshTokens"
     # Refresh token attributes
-    jti = Column("JTI", Uuid(as_uuid=False), primary_key=True)
+    jti = mapped_column("JTI", Uuid(as_uuid=False), primary_key=True)
     status = EnumColumn(
         "Status", RefreshTokenStatus, server_default=RefreshTokenStatus.CREATED.name
     )
     creation_time = DateNowColumn("CreationTime")
-    scope = Column("Scope", String(1024))
+    scope = mapped_column("Scope", String(1024))
 
     # User attributes bound to the refresh token
-    sub = Column("Sub", String(1024))
-    preferred_username = Column("PreferredUsername", String(255))
+    sub = mapped_column("Sub", String(1024))
+    preferred_username = mapped_column("PreferredUsername", String(255))
